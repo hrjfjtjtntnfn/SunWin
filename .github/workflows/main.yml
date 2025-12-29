@@ -1,0 +1,62 @@
+name: Python WebSocket Script
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "50 */5 * * *"  # Chạy mỗi 5 phút, bắt đầu từ phút 50
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install \
+          requests \
+          websockets==10.4 \
+          websocket-client \
+          colorama \
+          msgpack \
+          joblib \
+          numpy \
+          xgboost \
+          lightgbm \
+          scikit-learn 
+          
+    - name: Download model files
+      run: |
+        echo "Downloading gemini.py..."
+        wget -O gemini.py https://github.com/hrjfjtjtntnfn/WebYml/releases/download/v837373/gemini.py
+     
+        echo "Downloading taixiu_lgb_multi_window.pkl..."
+        wget -O taixiu_lgb_multi_window.pkl https://github.com/hrjfjtjtntnfn/WebYml/releases/download/v837373/taixiu_lgb_multi_window.pkl
+        
+        echo "Downloading taixiu_xgb_multi_window.pkl..."
+        wget -O taixiu_xgb_multi_window.pkl https://github.com/hrjfjtjtntnfn/WebYml/releases/download/v837373/taixiu_xgb_multi_window.pkl
+        
+        
+        echo "Files downloaded!"
+        ls -lah
+
+    - name: Create sun.py from secret
+      run: |
+        echo "${{ secrets.SUN_SCRIPT }}" | base64 --decode > sun.py
+
+    - name: Run the Python script (foreground)
+      run: python sun.py
